@@ -233,6 +233,4 @@ skill-manager-tauri/
 
 **如果这个项目对你有帮助，请给个 ⭐️ Star 支持一下！**
 
-Made with ❤️ by [wa1ki0g](https://github.com/wa1ki0g)
-
 </div>
