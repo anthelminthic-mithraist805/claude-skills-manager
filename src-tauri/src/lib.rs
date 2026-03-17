@@ -16,6 +16,137 @@ pub struct Skill {
     pub tags: Option<Vec<String>>,
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Platform {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub skills_dir_darwin: String,
+    pub skills_dir_win32: String,
+    pub skills_dir_linux: String,
+}
+
+fn get_platforms() -> Vec<Platform> {
+    vec![
+        Platform {
+            id: "claude".to_string(),
+            name: "Claude Code".to_string(),
+            icon: "Sparkles".to_string(),
+            skills_dir_darwin: "~/.claude/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.claude\\skills".to_string(),
+            skills_dir_linux: "~/.claude/skills".to_string(),
+        },
+        Platform {
+            id: "cursor".to_string(),
+            name: "Cursor".to_string(),
+            icon: "Terminal".to_string(),
+            skills_dir_darwin: "~/.cursor/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.cursor\\skills".to_string(),
+            skills_dir_linux: "~/.cursor/skills".to_string(),
+        },
+        Platform {
+            id: "windsurf".to_string(),
+            name: "Windsurf".to_string(),
+            icon: "Wind".to_string(),
+            skills_dir_darwin: "~/.codeium/windsurf/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.codeium\\windsurf\\skills".to_string(),
+            skills_dir_linux: "~/.codeium/windsurf/skills".to_string(),
+        },
+        Platform {
+            id: "copilot".to_string(),
+            name: "GitHub Copilot".to_string(),
+            icon: "Github".to_string(),
+            skills_dir_darwin: "~/.copilot/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.copilot\\skills".to_string(),
+            skills_dir_linux: "~/.copilot/skills".to_string(),
+        },
+        Platform {
+            id: "gemini".to_string(),
+            name: "Gemini CLI".to_string(),
+            icon: "Sparkles".to_string(),
+            skills_dir_darwin: "~/.gemini/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.gemini\\skills".to_string(),
+            skills_dir_linux: "~/.gemini/skills".to_string(),
+        },
+        Platform {
+            id: "trae".to_string(),
+            name: "Trae".to_string(),
+            icon: "Zap".to_string(),
+            skills_dir_darwin: "~/.trae/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.trae\\skills".to_string(),
+            skills_dir_linux: "~/.trae/skills".to_string(),
+        },
+        Platform {
+            id: "opencode".to_string(),
+            name: "OpenCode".to_string(),
+            icon: "Terminal".to_string(),
+            skills_dir_darwin: "~/.config/opencode/skills".to_string(),
+            skills_dir_win32: "%APPDATA%\\opencode\\skills".to_string(),
+            skills_dir_linux: "~/.config/opencode/skills".to_string(),
+        },
+        Platform {
+            id: "codex".to_string(),
+            name: "Codex CLI".to_string(),
+            icon: "Terminal".to_string(),
+            skills_dir_darwin: "~/.codex/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.codex\\skills".to_string(),
+            skills_dir_linux: "~/.codex/skills".to_string(),
+        },
+        Platform {
+            id: "roo".to_string(),
+            name: "Roo Code".to_string(),
+            icon: "Bot".to_string(),
+            skills_dir_darwin: "~/.roo/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.roo\\skills".to_string(),
+            skills_dir_linux: "~/.roo/skills".to_string(),
+        },
+        Platform {
+            id: "amp".to_string(),
+            name: "Amp".to_string(),
+            icon: "Zap".to_string(),
+            skills_dir_darwin: "~/.config/agents/skills".to_string(),
+            skills_dir_win32: "%APPDATA%\\agents\\skills".to_string(),
+            skills_dir_linux: "~/.config/agents/skills".to_string(),
+        },
+        Platform {
+            id: "Claude Code".to_string(),
+            name: "Kiro".to_string(),
+            icon: "Sparkle".to_string(),
+            skills_dir_darwin: "~/.kiro/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.kiro\\skills".to_string(),
+            skills_dir_linux: "~/.kiro/skills".to_string(),
+        },
+        Platform {
+            id: "openclaw".to_string(),
+            name: "OpenClaw".to_string(),
+            icon: "Claw".to_string(),
+            skills_dir_darwin: "~/.openclaw/skills".to_string(),
+            skills_dir_win32: "%USERPROFILE%\\.openclaw\\skills".to_string(),
+            skills_dir_linux: "~/.openclaw/skills".to_string(),
+        },
+    ]
+}
+
+fn resolve_platform_path(template: &str) -> PathBuf {
+    let home = dirs::home_dir().unwrap_or_default();
+    let path_str = template
+        .replace("~", home.to_str().unwrap_or(""))
+        .replace("%USERPROFILE%", home.to_str().unwrap_or(""))
+        .replace("%APPDATA%", &home.join("AppData").join("Roaming").to_str().unwrap_or("").to_string());
+    PathBuf::from(path_str)
+}
+
+fn get_platform_skills_dir(platform: &Platform) -> PathBuf {
+    let template = if cfg!(target_os = "macos") {
+        &platform.skills_dir_darwin
+    } else if cfg!(target_os = "windows") {
+        &platform.skills_dir_win32
+    } else {
+        &platform.skills_dir_linux
+    };
+    resolve_platform_path(template)
+}
+
 fn skills_dir() -> PathBuf {
     dirs::home_dir().unwrap_or_default().join(".agents").join("skills")
 }
@@ -179,11 +310,121 @@ fn import_skill_from_claude(skill_name: String) -> Result<String, String> {
     Ok(format!("已同步 '{}' 到 ~/.agents/skills", skill_name))
 }
 
+#[tauri::command]
+fn get_supported_platforms() -> Vec<Platform> {
+    get_platforms()
+}
+
+#[tauri::command]
+fn detect_installed_platforms() -> Vec<String> {
+    let mut installed = Vec::new();
+    for platform in get_platforms() {
+        let skills_dir = get_platform_skills_dir(&platform);
+        // Check if parent directory exists
+        if let Some(parent) = skills_dir.parent() {
+            if parent.exists() {
+                installed.push(platform.id);
+            }
+        }
+    }
+    installed
+}
+
+#[tauri::command]
+fn install_to_platform(skill_name: String, platform_id: String) -> Result<String, String> {
+    let platforms = get_platforms();
+    let platform = platforms.iter().find(|p| p.id == platform_id)
+        .ok_or(format!("Unknown platform: {}", platform_id))?;
+
+    let src = skills_dir().join(&skill_name);
+    if !src.exists() {
+        return Err(format!("Skill '{}' not found in local database", skill_name));
+    }
+
+    let dst_dir = get_platform_skills_dir(platform);
+    let dst = dst_dir.join(&skill_name);
+
+    fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?;
+    copy_dir(&src, &dst)?;
+
+    Ok(format!("已安装 '{}' 到 {}", skill_name, platform.name))
+}
+
+#[tauri::command]
+fn uninstall_from_platform(skill_name: String, platform_id: String) -> Result<String, String> {
+    let platforms = get_platforms();
+    let platform = platforms.iter().find(|p| p.id == platform_id)
+        .ok_or(format!("Unknown platform: {}", platform_id))?;
+
+    let dst_dir = get_platform_skills_dir(platform);
+    let dst = dst_dir.join(&skill_name);
+
+    if dst.exists() {
+        fs::remove_dir_all(&dst).map_err(|e| e.to_string())?;
+        Ok(format!("已从 {} 卸载 '{}'", platform.name, skill_name))
+    } else {
+        Err(format!("Skill '{}' not found in {}", skill_name, platform.name))
+    }
+}
+
+#[tauri::command]
+fn get_install_status(skill_name: String) -> std::collections::HashMap<String, bool> {
+    let mut status = std::collections::HashMap::new();
+    for platform in get_platforms() {
+        let skills_dir = get_platform_skills_dir(&platform);
+        let skill_path = skills_dir.join(&skill_name).join("SKILL.md");
+        status.insert(platform.id, skill_path.exists());
+    }
+    status
+}
+
+#[tauri::command]
+fn scan_all_platforms() -> Vec<Skill> {
+    let mut skill_map: std::collections::HashMap<String, Skill> = std::collections::HashMap::new();
+
+    for platform in get_platforms() {
+        let skills_dir = get_platform_skills_dir(&platform);
+        if !skills_dir.exists() {
+            continue;
+        }
+
+        if let Ok(entries) = fs::read_dir(&skills_dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    if let Ok(content) = fs::read_to_string(path.join("SKILL.md")) {
+                        let skill = parse_skill(&content, path.to_str().unwrap_or(""));
+                        // Only add if not already in map (deduplication by name)
+                        skill_map.entry(skill.name.clone()).or_insert(skill);
+                    }
+                }
+            }
+        }
+    }
+
+    skill_map.into_values().collect()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_skills, get_claude_skills, create_skill, update_skill, delete_skill, sync_to_claude, import_from_claude, import_skill_from_claude])
+        .invoke_handler(tauri::generate_handler![
+            get_skills,
+            get_claude_skills,
+            create_skill,
+            update_skill,
+            delete_skill,
+            sync_to_claude,
+            import_from_claude,
+            import_skill_from_claude,
+            get_supported_platforms,
+            detect_installed_platforms,
+            install_to_platform,
+            uninstall_from_platform,
+            get_install_status,
+            scan_all_platforms
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

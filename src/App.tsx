@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench } from "lucide-react";
+import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench, Layers, Scan } from "lucide-react";
+import PlatformInstallModal from "./components/PlatformInstallModal";
 
 interface Skill {
   name: string;
@@ -40,6 +41,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [syncing, setSyncing] = useState<Record<string, "loading" | "done">>({});
+  const [platformModalSkill, setPlatformModalSkill] = useState<string | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -221,12 +223,27 @@ export default function App() {
             <>{source === "local" ? <Upload size={12} /> : <Download size={12} />} {source === "local" ? "同步到 Claude" : "同步到本地"}</>
           )}
         </button>
+        {source === "local" && (
+          <button
+            onClick={() => setPlatformModalSkill(skill.name)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all bg-violet-600/10 hover:bg-violet-600/20 text-violet-400 border border-violet-600/20 mt-2"
+          >
+            <Layers size={12} /> 安装到多个平台
+          </button>
+        )}
       </div>
     );
   };
 
   return (
     <div className="flex h-screen bg-gray-950 text-gray-100 font-sans">
+      {platformModalSkill && (
+        <PlatformInstallModal
+          skillName={platformModalSkill}
+          onClose={() => setPlatformModalSkill(null)}
+          onSuccess={() => loadAll()}
+        />
+      )}
       <aside className="w-60 bg-gray-900 border-r border-gray-800 flex flex-col">
         <div className="p-5 border-b border-gray-800">
           <div className="flex items-center gap-2 mb-1">
@@ -257,9 +274,28 @@ export default function App() {
             <Plus size={16} /> 新建 Skill
           </button>
         </nav>
-        <div className="p-4 border-t border-gray-800">
-          <p className="text-xs text-gray-600">本地: {localSkills.length} | Claude: {claudeSkills.length}</p>
-          <p className="text-xs text-gray-600 mt-1">收藏: {favorites.size}</p>
+        <div className="p-3 border-t border-gray-800 space-y-2">
+          <button
+            onClick={async () => {
+              setLoading(true);
+              try {
+                const scanned = await invoke<Skill[]>("scan_all_platforms");
+                alert(`扫描完成！发现 ${scanned.length} 个 Skills`);
+                loadAll();
+              } catch (e: any) {
+                alert("扫描失败: " + e);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-emerald-400 border border-gray-800"
+          >
+            <Scan size={14} /> 扫描所有平台
+          </button>
+          <div className="pt-2">
+            <p className="text-xs text-gray-600">本地: {localSkills.length} | Claude: {claudeSkills.length}</p>
+            <p className="text-xs text-gray-600 mt-1">收藏: {favorites.size}</p>
+          </div>
         </div>
       </aside>
 
