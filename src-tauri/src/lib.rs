@@ -405,6 +405,91 @@ fn scan_all_platforms() -> Vec<Skill> {
     skill_map.into_values().collect()
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct SkillCheckResult {
+    pub skill_name: String,
+    pub high_risk: usize,
+    pub medium_risk: usize,
+    pub low_risk: usize,
+    pub issues: Vec<String>,
+}
+
+#[tauri::command]
+fn check_skill_quality(skill_name: String) -> Result<SkillCheckResult, String> {
+    let skill_path = skills_dir().join(&skill_name).join("SKILL.md");
+    if !skill_path.exists() {
+        return Err(format!("Skill '{}' not found", skill_name));
+    }
+
+    let content = fs::read_to_string(&skill_path).map_err(|e| e.to_string())?;
+
+    // 语义陷阱词典（简化版）
+    let high_risk_words = vec!["风险", "分析", "建议", "洞察", "risk", "analyze", "suggestion", "insight"];
+    let medium_risk_words = vec!["审查", "问题", "描述", "探索", "review", "issue", "describe", "explore"];
+    let low_risk_words = vec!["异常", "应该", "anomaly", "should"];
+
+    let mut high_count = 0;
+    let mut medium_count = 0;
+    let mut low_count = 0;
+    let mut issues = Vec::new();
+
+    let content_lower = content.to_lowercase();
+
+    // 检测高危词汇
+    for word in &high_risk_words {
+        if content_lower.contains(word) {
+            high_count += content_lower.matches(word).count();
+            issues.push(format!("🔴 高危: 发现宽边界词 \"{}\"，建议替换为更精确的词汇", word));
+        }
+    }
+
+    // 检测中危词汇
+    for word in &medium_risk_words {
+        if content_lower.contains(word) {
+            medium_count += content_lower.matches(word).count();
+            issues.push(format!("🟡 中危: 发现宽边界词 \"{}\"，建议使用更具体的表达", word));
+        }
+    }
+
+    // 检测低危词汇
+    for word in &low_risk_words {
+        if content_lower.contains(word) {
+            low_count += content_lower.matches(word).count();
+            issues.push(format!("🟢 低危: 发现宽边界词 \"{}\"，建议考虑替换", word));
+        }
+    }
+
+    Ok(SkillCheckResult {
+        skill_name,
+        high_risk: high_count,
+        medium_risk: medium_count,
+        low_risk: low_count,
+        issues,
+    })
+}
+
+#[tauri::command]
+fn check_all_skills() -> Vec<SkillCheckResult> {
+    let mut results = Vec::new();
+
+    if let Ok(entries) = fs::read_dir(skills_dir()) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                if let Some(name) = path.file_name() {
+                    if let Some(name_str) = name.to_str() {
+                        if let Ok(result) = check_skill_quality(name_str.to_string()) {
+                            results.push(result);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    results
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -423,7 +508,9 @@ pub fn run() {
             install_to_platform,
             uninstall_from_platform,
             get_install_status,
-            scan_all_platforms
+            scan_all_platforms,
+            check_skill_quality,
+            check_all_skills
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

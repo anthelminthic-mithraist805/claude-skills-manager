@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench, Layers, Scan, ChevronLeft, ChevronRight, Settings, Heart, Rocket, Store, Home, Filter } from "lucide-react";
+import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench, Layers, Scan, ChevronLeft, ChevronRight, Settings, Heart, Rocket, Store, Home, Filter, CheckCircle2, AlertTriangle } from "lucide-react";
 import PlatformInstallModal from "./components/PlatformInstallModal";
 
 interface Skill {
@@ -12,6 +12,14 @@ interface Skill {
   path: string;
   category?: string;
   tags?: string[];
+}
+
+interface SkillCheckResult {
+  skill_name: string;
+  high_risk: number;
+  medium_risk: number;
+  low_risk: number;
+  issues: string[];
 }
 
 type Tab = "local" | "claude" | "create" | "store";
@@ -362,6 +370,9 @@ export default function App() {
         <div className="mt-auto p-3 border-t border-gray-800 space-y-2">
           <button onClick={async () => { setLoading(true); try { const scanned = await invoke("scan_all_platforms"); alert(`扫描完成！发现 ${scanned.length} 个 Skills`); loadAll(); } catch (e) { alert("扫描失败: " + e); } finally { setLoading(false); } }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-2 rounded-lg text-xs transition-colors text-gray-400 hover:bg-gray-800 hover:text-emerald-400 border border-gray-800`} title="扫描">
             <Scan size={14} />{!sidebarCollapsed && "扫描所有平台"}
+          </button>
+          <button onClick={async () => { setLoading(true); try { const results = await invoke("check_all_skills"); const total = results.length; const hasIssues = results.filter(r => r.high_risk > 0 || r.medium_risk > 0).length; alert(`检查完成！\n\n总计: ${total} 个 Skills\n有问题: ${hasIssues} 个\n\n详细报告请查看控制台`); console.table(results); } catch (e) { alert("检查失败: " + e); } finally { setLoading(false); } }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-2 rounded-lg text-xs transition-colors text-gray-400 hover:bg-gray-800 hover:text-blue-400 border border-gray-800`} title="检查质量">
+            <CheckCircle2 size={14} />{!sidebarCollapsed && "检查所有 Skills"}
           </button>
           {!sidebarCollapsed && (
             <div className="pt-2 space-y-1">
