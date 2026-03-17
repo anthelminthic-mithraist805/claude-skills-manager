@@ -99,6 +99,24 @@ fn delete_skill(path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn get_claude_skills() -> Vec<Skill> {
+    let dir = claude_skills_dir();
+    let _ = fs::create_dir_all(&dir);
+    let mut skills = Vec::new();
+    if let Ok(entries) = fs::read_dir(&dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                if let Ok(content) = fs::read_to_string(path.join("SKILL.md")) {
+                    skills.push(parse_skill(&content, path.to_str().unwrap_or("")));
+                }
+            }
+        }
+    }
+    skills
+}
+
+#[tauri::command]
 fn sync_to_claude(skill_name: String) -> Result<String, String> {
     let src = skills_dir().join(&skill_name);
     let dst = claude_skills_dir().join(&skill_name);
@@ -129,11 +147,21 @@ fn import_from_claude() -> Result<String, String> {
     Ok(format!("已从 ~/.claude/skills 导入 {} 个 Skills", count))
 }
 
+#[tauri::command]
+fn import_skill_from_claude(skill_name: String) -> Result<String, String> {
+    let src = claude_skills_dir().join(&skill_name);
+    let dst = skills_dir().join(&skill_name);
+    if !src.exists() { return Err(format!("Skill '{}' not found in Claude directory", skill_name)); }
+    fs::create_dir_all(skills_dir()).map_err(|e| e.to_string())?;
+    copy_dir(&src, &dst)?;
+    Ok(format!("已同步 '{}' 到 ~/.agents/skills", skill_name))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_skills, create_skill, update_skill, delete_skill, sync_to_claude, import_from_claude])
+        .invoke_handler(tauri::generate_handler![get_skills, get_claude_skills, create_skill, update_skill, delete_skill, sync_to_claude, import_from_claude, import_skill_from_claude])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
