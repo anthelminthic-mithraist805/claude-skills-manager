@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench, Layers, Scan } from "lucide-react";
+import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench, Layers, Scan, ChevronLeft, ChevronRight, Settings, Heart, Rocket, Store, Home, Filter } from "lucide-react";
 import PlatformInstallModal from "./components/PlatformInstallModal";
 
 interface Skill {
@@ -14,9 +14,10 @@ interface Skill {
   tags?: string[];
 }
 
-type Tab = "local" | "claude" | "create";
+type Tab = "local" | "claude" | "create" | "store";
 type ViewMode = "grid" | "list";
 type Category = "all" | "dev" | "ai" | "data" | "security" | "utils";
+type FilterType = "all" | "favorites" | "deployed";
 
 const CATEGORIES = [
   { key: "all" as Category, label: "全部", icon: Grid3x3 },
@@ -33,15 +34,20 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("local");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [category, setCategory] = useState<Category>("all");
+  const [filterType, setFilterType] = useState<FilterType>("all");
   const [localSkills, setLocalSkills] = useState<Skill[]>([]);
   const [claudeSkills, setClaudeSkills] = useState<Skill[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [deployed, setDeployed] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<Skill | null>(null);
   const [form, setForm] = useState<Skill>(empty);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [syncing, setSyncing] = useState<Record<string, "loading" | "done">>({});
   const [platformModalSkill, setPlatformModalSkill] = useState<string | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+  const [showTagFilter, setShowTagFilter] = useState(false);
 
   const loadAll = async () => {
     setLoading(true);
@@ -52,6 +58,20 @@ export default function App() {
       ]);
       setLocalSkills(local || []);
       setClaudeSkills(claude || []);
+
+      // Load deployed status for all local skills
+      const deployedSet = new Set<string>();
+      for (const skill of local || []) {
+        try {
+          const status = await invoke<Record<string, boolean>>("get_install_status", { skillName: skill.name });
+          if (Object.values(status).some(v => v)) {
+            deployedSet.add(skill.name);
+          }
+        } catch (e) {
+          console.error(`Failed to get status for ${skill.name}:`, e);
+        }
+      }
+      setDeployed(deployedSet);
     } catch (e) {
       console.error(e);
     }
@@ -131,14 +151,45 @@ export default function App() {
 
   const filterSkills = (skills: Skill[]) => {
     return skills.filter(s => {
+      // Search filter
       const matchSearch = search === "" ||
         s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.description.toLowerCase().includes(search.toLowerCase()) ||
         (s.tags || []).some(t => t.toLowerCase().includes(search.toLowerCase()));
 
+      // Category filter
       const matchCategory = category === "all" || s.category === category;
 
-      return matchSearch && matchCategory;
+      // Type filter (favorites/deployed)
+      let matchType = true;
+      if (filterType === "favorites") {
+        matchType = favorites.has(s.name);
+      } else if (filterType === "deployed") {
+        matchType = deployed.has(s.name);
+      }
+
+      // Tag filter
+      const matchTags = selectedTags.size === 0 ||
+        (s.tags || []).some(t => selectedTags.has(t));
+
+      return matchSearch && matchCategory && matchType && matchTags;
+    });
+  };
+
+  // Get all unique tags from skills
+  const allTags = Array.from(new Set(
+    localSkills.flatMap(s => s.tags || [])
+  )).sort();
+
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => {
+      const next = new Set(prev);
+      if (next.has(tag)) {
+        next.delete(tag);
+      } else {
+        next.add(tag);
+      }
+      return next;
     });
   };
 
