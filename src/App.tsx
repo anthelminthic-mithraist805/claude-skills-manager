@@ -295,60 +295,85 @@ export default function App() {
           onSuccess={() => loadAll()}
         />
       )}
-      <aside className="w-60 bg-gray-900 border-r border-gray-800 flex flex-col">
-        <div className="p-5 border-b border-gray-800">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center">
-              <Package size={16} />
+      <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300`}>
+        <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+          {!sidebarCollapsed && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-lg">
+                <Package size={16} className="text-white" />
+              </div>
+              <div>
+                <span className="font-bold text-base">Skills Manager</span>
+                <p className="text-[10px] text-gray-500">Claude Agent Skills</p>
+              </div>
             </div>
-            <span className="font-bold text-lg">Skills Manager</span>
-          </div>
-          <p className="text-xs text-gray-500 ml-10">Claude Agent Skills</p>
+          )}
+          <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors" title={sidebarCollapsed ? "展开" : "折叠"}>
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
-        <nav className="flex-1 p-3 space-y-1">
-          <button
-            onClick={() => setTab("local")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${tab === "local" ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
-          >
-            <Database size={16} /> 本地数据库
+        <nav className="p-3 space-y-1">
+          <div className={`text-[10px] font-semibold text-gray-600 uppercase tracking-wider mb-2 ${sidebarCollapsed ? "text-center" : "px-3"}`}>
+            {!sidebarCollapsed && "主菜单"}
+          </div>
+          <button onClick={() => { setTab("local"); setFilterType("all"); }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm transition-all ${tab === "local" && filterType === "all" ? "bg-violet-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`} title="全部">
+            <Home size={16} />
+            {!sidebarCollapsed && <span className="flex-1 text-left">全部</span>}
+            {!sidebarCollapsed && <span className="text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded-full">{localSkills.length}</span>}
           </button>
-          <button
-            onClick={() => setTab("claude")}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${tab === "claude" ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
-          >
-            <FolderOpen size={16} /> Claude 目录
+          <button onClick={() => { setTab("local"); setFilterType("favorites"); }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm transition-all ${tab === "local" && filterType === "favorites" ? "bg-violet-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`} title="收藏">
+            <Heart size={16} />
+            {!sidebarCollapsed && <span className="flex-1 text-left">收藏</span>}
+            {!sidebarCollapsed && <span className="text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded-full">{favorites.size}</span>}
           </button>
-          <button
-            onClick={() => { setEditing(null); setForm(empty); setTab("create"); }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${tab === "create" ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
-          >
-            <Plus size={16} /> 新建 Skill
+          <button onClick={() => { setTab("local"); setFilterType("deployed"); }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm transition-all ${tab === "local" && filterType === "deployed" ? "bg-violet-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`} title="已部署">
+            <Rocket size={16} />
+            {!sidebarCollapsed && <span className="flex-1 text-left">已部署</span>}
+            {!sidebarCollapsed && <span className="text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded-full">{deployed.size}</span>}
+          </button>
+          <div className="h-px bg-gray-800 my-2"></div>
+          <button onClick={() => setTab("claude")} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm transition-all ${tab === "claude" ? "bg-violet-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`} title="Claude 目录">
+            <FolderOpen size={16} />
+            {!sidebarCollapsed && <span className="flex-1 text-left">Claude 目录</span>}
+            {!sidebarCollapsed && <span className="text-xs bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded-full">{claudeSkills.length}</span>}
+          </button>
+          <button onClick={() => { setEditing(null); setForm(empty); setTab("create"); }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-3"} px-3 py-2.5 rounded-lg text-sm transition-all ${tab === "create" ? "bg-violet-600 text-white shadow-lg" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`} title="新建">
+            <Plus size={16} />
+            {!sidebarCollapsed && <span className="flex-1 text-left">新建 Skill</span>}
           </button>
         </nav>
-        <div className="p-3 border-t border-gray-800 space-y-2">
-          <button
-            onClick={async () => {
-              setLoading(true);
-              try {
-                const scanned = await invoke<Skill[]>("scan_all_platforms");
-                alert(`扫描完成！发现 ${scanned.length} 个 Skills`);
-                loadAll();
-              } catch (e: any) {
-                alert("扫描失败: " + e);
-              } finally {
-                setLoading(false);
-              }
-            }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-emerald-400 border border-gray-800"
-          >
-            <Scan size={14} /> 扫描所有平台
-          </button>
-          <div className="pt-2">
-            <p className="text-xs text-gray-600">本地: {localSkills.length} | Claude: {claudeSkills.length}</p>
-            <p className="text-xs text-gray-600 mt-1">收藏: {favorites.size}</p>
+        {!sidebarCollapsed && tab === "local" && allTags.length > 0 && (
+          <div className="px-3 pb-3">
+            <button onClick={() => setShowTagFilter(!showTagFilter)} className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-800 hover:text-gray-400 transition-colors">
+              <span className="flex items-center gap-2"><Filter size={12} />标签过滤 {selectedTags.size > 0 && `(${selectedTags.size})`}</span>
+              <ChevronRight size={12} className={`transition-transform ${showTagFilter ? "rotate-90" : ""}`} />
+            </button>
+            {showTagFilter && (
+              <div className="mt-2 max-h-32 overflow-y-auto space-y-1">
+                {allTags.map(tag => (
+                  <button key={tag} onClick={() => toggleTag(tag)} className={`w-full flex items-center gap-2 px-3 py-1.5 rounded text-xs transition-colors ${selectedTags.has(tag) ? "bg-violet-600/20 text-violet-400 border border-violet-600/30" : "text-gray-500 hover:bg-gray-800 hover:text-gray-400"}`}>
+                    <Tag size={10} />{tag}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+        )}
+        <div className="mt-auto p-3 border-t border-gray-800 space-y-2">
+          <button onClick={async () => { setLoading(true); try { const scanned = await invoke("scan_all_platforms"); alert(`扫描完成！发现 ${scanned.length} 个 Skills`); loadAll(); } catch (e) { alert("扫描失败: " + e); } finally { setLoading(false); } }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-2 rounded-lg text-xs transition-colors text-gray-400 hover:bg-gray-800 hover:text-emerald-400 border border-gray-800`} title="扫描">
+            <Scan size={14} />{!sidebarCollapsed && "扫描所有平台"}
+          </button>
+          {!sidebarCollapsed && (
+            <div className="pt-2 space-y-1">
+              <div className="flex items-center justify-between text-xs text-gray-600"><span>本地</span><span className="font-mono">{localSkills.length}</span></div>
+              <div className="flex items-center justify-between text-xs text-gray-600"><span>Claude</span><span className="font-mono">{claudeSkills.length}</span></div>
+              <div className="flex items-center justify-between text-xs text-gray-600"><span>收藏</span><span className="font-mono">{favorites.size}</span></div>
+              <div className="flex items-center justify-between text-xs text-gray-600"><span>已部署</span><span className="font-mono">{deployed.size}</span></div>
+            </div>
+          )}
         </div>
       </aside>
+
 
       <main className="flex-1 flex flex-col overflow-hidden">
         <header className="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-6">
