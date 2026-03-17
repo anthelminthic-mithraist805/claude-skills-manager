@@ -10,6 +10,10 @@ pub struct Skill {
     pub version: String,
     pub content: String,
     pub path: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tags: Option<Vec<String>>,
 }
 
 fn skills_dir() -> PathBuf {
@@ -25,6 +29,8 @@ fn parse_skill(raw: &str, path: &str) -> Skill {
     let mut description = String::new();
     let mut author = String::from("unknown");
     let mut version = String::from("0.1.0");
+    let mut category: Option<String> = None;
+    let mut tags: Option<Vec<String>> = None;
     let mut in_front = false;
     let mut dash_count = 0;
     let mut body_lines: Vec<&str> = Vec::new();
@@ -40,17 +46,33 @@ fn parse_skill(raw: &str, path: &str) -> Skill {
             else if let Some(v) = line.strip_prefix("description:") { description = v.trim().to_string(); }
             else if let Some(v) = line.strip_prefix("  author:") { author = v.trim().to_string(); }
             else if let Some(v) = line.strip_prefix("  version:") { version = v.trim().trim_matches('"').to_string(); }
+            else if let Some(v) = line.strip_prefix("  category:") { category = Some(v.trim().to_string()); }
+            else if let Some(v) = line.strip_prefix("  tags:") {
+                let tag_str = v.trim().trim_matches('[').trim_matches(']');
+                if !tag_str.is_empty() {
+                    tags = Some(tag_str.split(',').map(|s| s.trim().trim_matches('"').to_string()).collect());
+                }
+            }
         } else if dash_count >= 2 {
             body_lines.push(line);
         }
     }
 
-    Skill { name, description, author, version, content: body_lines.join("\n").trim().to_string(), path: path.to_string() }
+    Skill { name, description, author, version, content: body_lines.join("\n").trim().to_string(), path: path.to_string(), category, tags }
 }
 
 fn build_skill_md(s: &Skill) -> String {
-    format!("---\nname: {}\ndescription: {}\nmetadata:\n  author: {}\n  version: \"{}\"\n---\n\n{}\n",
-        s.name, s.description, s.author, s.version, s.content)
+    let mut metadata = format!("  author: {}\n  version: \"{}\"", s.author, s.version);
+    if let Some(ref cat) = s.category {
+        metadata.push_str(&format!("\n  category: {}", cat));
+    }
+    if let Some(ref tags) = s.tags {
+        if !tags.is_empty() {
+            metadata.push_str(&format!("\n  tags: [{}]", tags.iter().map(|t| format!("\"{}\"", t)).collect::<Vec<_>>().join(", ")));
+        }
+    }
+    format!("---\nname: {}\ndescription: {}\nmetadata:\n{}\n---\n\n{}\n",
+        s.name, s.description, metadata, s.content)
 }
 
 fn copy_dir(src: &PathBuf, dst: &PathBuf) -> Result<(), String> {
