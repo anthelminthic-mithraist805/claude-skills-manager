@@ -73,23 +73,6 @@
 - **Windows**: `.msi` 或 `.exe`
 - **Linux**: `.AppImage`, `.deb`, 或 `.rpm`
 
-### 从源码构建
-
-```bash
-# 克隆仓库
-git clone https://github.com/yourusername/skill-manager-tauri.git
-cd skill-manager-tauri
-
-# 安装依赖
-npm install
-
-# 开发模式运行
-npm run tauri dev
-
-# 构建生产版本
-npm run tauri build
-```
-
 ---
 
 ## 🎯 使用指南
@@ -144,16 +127,6 @@ metadata:
 
 ---
 
-## 🛠️ 技术栈
-
-- **前端框架**: React 19 + TypeScript
-- **UI 框架**: Tailwind CSS 4
-- **桌面框架**: Tauri 2.0
-- **后端语言**: Rust
-- **构建工具**: Vite 7
-- **图标库**: Lucide React
-
----
 
 ## 🔧 开发
 
@@ -166,42 +139,7 @@ metadata:
   - **Windows**: Microsoft C++ Build Tools
   - **Linux**: `build-essential`, `libwebkit2gtk-4.0-dev`, 等
 
-### 开发命令
 
-```bash
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run tauri dev
-
-# 构建生产版本
-npm run tauri build
-
-# 仅构建前端
-npm run build
-
-# 类型检查
-npx tsc --noEmit
-```
-
-### 项目结构
-
-```
-skill-manager-tauri/
-├── src/                    # React 前端代码
-│   ├── components/         # React 组件
-│   ├── App.tsx            # 主应用组件
-│   └── main.tsx           # 入口文件
-├── src-tauri/             # Rust 后端代码
-│   ├── src/
-│   │   └── lib.rs         # Tauri 命令和逻辑
-│   ├── Cargo.toml         # Rust 依赖
-│   └── tauri.conf.json    # Tauri 配置
-└── package.json           # Node.js 依赖
-```
-
----
 
 ## 🤝 贡献
 
