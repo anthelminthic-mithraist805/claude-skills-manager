@@ -108,11 +108,32 @@ fn sync_to_claude(skill_name: String) -> Result<String, String> {
     Ok(format!("已同步 '{}' 到 ~/.claude/skills", skill_name))
 }
 
+#[tauri::command]
+fn import_from_claude() -> Result<String, String> {
+    let src_dir = claude_skills_dir();
+    let dst_dir = skills_dir();
+    if !src_dir.exists() { return Err("~/.claude/skills 目录不存在".to_string()); }
+    fs::create_dir_all(&dst_dir).map_err(|e| e.to_string())?;
+    let mut count = 0;
+    for entry in fs::read_dir(&src_dir).map_err(|e| e.to_string())?.flatten() {
+        let path = entry.path();
+        if path.is_dir() && path.join("SKILL.md").exists() {
+            let name = path.file_name().ok_or("bad name")?;
+            let dst = dst_dir.join(name);
+            if !dst.exists() {
+                copy_dir(&path, &dst)?;
+                count += 1;
+            }
+        }
+    }
+    Ok(format!("已从 ~/.claude/skills 导入 {} 个 Skills", count))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_skills, create_skill, update_skill, delete_skill, sync_to_claude])
+        .invoke_handler(tauri::generate_handler![get_skills, create_skill, update_skill, delete_skill, sync_to_claude, import_from_claude])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

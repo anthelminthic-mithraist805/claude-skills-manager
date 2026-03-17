@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
-import { BookOpen, Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload } from "lucide-react";
+import { BookOpen, Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download } from "lucide-react";
 
 interface Skill {
   name: string;
@@ -71,6 +71,16 @@ export default function App() {
     }
   };
 
+  const importFromClaude = async () => {
+    try {
+      const result = await invoke<string>("import_from_claude");
+      alert(result);
+      load();
+    } catch (e: any) {
+      alert("导入失败: " + e);
+    }
+  };
+
   const filtered = skills.filter(s =>
     s.name.toLowerCase().includes(search.toLowerCase()) ||
     s.description.toLowerCase().includes(search.toLowerCase())
@@ -100,6 +110,12 @@ export default function App() {
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${view === "form" && !editing ? "bg-violet-600 text-white" : "text-gray-400 hover:bg-gray-800 hover:text-white"}`}
           >
             <Plus size={16} /> 创建 Skill
+          </button>
+          <button
+            onClick={importFromClaude}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors text-gray-400 hover:bg-gray-800 hover:text-emerald-400"
+          >
+            <Download size={16} /> 从 Claude 导入
           </button>
         </nav>
         <div className="p-4 border-t border-gray-800">
