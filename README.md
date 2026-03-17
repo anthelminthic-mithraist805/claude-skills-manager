@@ -225,7 +225,6 @@ skill-manager-tauri/
 
 - [Tauri](https://tauri.app) - 跨平台桌面应用框架
 - [Semantic Trap Detector](https://github.com/yourusername/semantic-trap-detector) - 语义陷阱检测理论
-- [PromptHub](https://github.com/yourusername/PromptHub) - 多平台架构参考
 - 所有贡献者和用户
 
 ---
