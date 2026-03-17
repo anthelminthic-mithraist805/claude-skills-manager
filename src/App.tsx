@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Plus, Trash2, Edit3, RefreshCw, X, Save, Package, Upload, Download, Database, FolderOpen, Check, Search, Grid3x3, List, Star, Tag, Code, Sparkles, FileText, Shield, Wrench, Layers, Scan, ChevronLeft, ChevronRight, Settings, Heart, Rocket, Store, Home, Filter, CheckCircle2, AlertTriangle } from "lucide-react";
 import PlatformInstallModal from "./components/PlatformInstallModal";
+import SkillCheckModal from "./components/SkillCheckModal";
 
 interface Skill {
   name: string;
@@ -14,12 +15,32 @@ interface Skill {
   tags?: string[];
 }
 
+interface TrapDetail {
+  trap_id: string;
+  narrow_word: string;
+  wide_word: string;
+  risk_level: string;
+  line_number: number;
+  context: string;
+  reason: string;
+}
+
+interface ReplacementSuggestion {
+  line_number: number;
+  original: string;
+  suggested: string;
+  reason: string;
+}
+
 interface SkillCheckResult {
   skill_name: string;
+  total_keywords: number;
+  traps_found: number;
   high_risk: number;
   medium_risk: number;
   low_risk: number;
-  issues: string[];
+  details: TrapDetail[];
+  suggestions: ReplacementSuggestion[];
 }
 
 type Tab = "local" | "claude" | "create" | "store";
@@ -56,6 +77,7 @@ export default function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [showTagFilter, setShowTagFilter] = useState(false);
+  const [checkResults, setCheckResults] = useState<SkillCheckResult[] | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -303,6 +325,12 @@ export default function App() {
           onSuccess={() => loadAll()}
         />
       )}
+      {checkResults && (
+        <SkillCheckModal
+          results={checkResults}
+          onClose={() => setCheckResults(null)}
+        />
+      )}
       <aside className={`${sidebarCollapsed ? "w-16" : "w-64"} bg-gray-900 border-r border-gray-800 flex flex-col transition-all duration-300`}>
         <div className="p-5 border-b border-gray-800 flex items-center justify-between">
           {!sidebarCollapsed && (
@@ -371,7 +399,7 @@ export default function App() {
           <button onClick={async () => { setLoading(true); try { const scanned = await invoke("scan_all_platforms"); alert(`扫描完成！发现 ${scanned.length} 个 Skills`); loadAll(); } catch (e) { alert("扫描失败: " + e); } finally { setLoading(false); } }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-2 rounded-lg text-xs transition-colors text-gray-400 hover:bg-gray-800 hover:text-emerald-400 border border-gray-800`} title="扫描">
             <Scan size={14} />{!sidebarCollapsed && "扫描所有平台"}
           </button>
-          <button onClick={async () => { setLoading(true); try { const results = await invoke("check_all_skills"); const total = results.length; const hasIssues = results.filter(r => r.high_risk > 0 || r.medium_risk > 0).length; alert(`检查完成！\n\n总计: ${total} 个 Skills\n有问题: ${hasIssues} 个\n\n详细报告请查看控制台`); console.table(results); } catch (e) { alert("检查失败: " + e); } finally { setLoading(false); } }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-2 rounded-lg text-xs transition-colors text-gray-400 hover:bg-gray-800 hover:text-blue-400 border border-gray-800`} title="检查质量">
+          <button onClick={async () => { setLoading(true); try { const results = await invoke<SkillCheckResult[]>("check_all_skills"); setCheckResults(results); } catch (e) { alert("检查失败: " + e); } finally { setLoading(false); } }} className={`w-full flex items-center ${sidebarCollapsed ? "justify-center" : "gap-2"} px-3 py-2 rounded-lg text-xs transition-colors text-gray-400 hover:bg-gray-800 hover:text-blue-400 border border-gray-800`} title="检查质量">
             <CheckCircle2 size={14} />{!sidebarCollapsed && "检查所有 Skills"}
           </button>
           {!sidebarCollapsed && (

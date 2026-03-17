@@ -408,10 +408,71 @@ fn scan_all_platforms() -> Vec<Skill> {
 #[derive(Serialize, Deserialize, Clone)]
 pub struct SkillCheckResult {
     pub skill_name: String,
+    pub total_keywords: usize,
+    pub traps_found: usize,
     pub high_risk: usize,
     pub medium_risk: usize,
     pub low_risk: usize,
-    pub issues: Vec<String>,
+    pub details: Vec<TrapDetail>,
+    pub suggestions: Vec<ReplacementSuggestion>,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct TrapDetail {
+    pub word: String,
+    pub trap_id: String,
+    pub risk_level: String,
+    pub replacement: String,
+    pub reason: String,
+    pub line_number: usize,
+    pub context: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ReplacementSuggestion {
+    pub original: String,
+    pub fixed: String,
+    pub reason: String,
+}
+
+// 完整的语义陷阱词典
+fn get_semantic_trap_lexicon() -> Vec<(String, String, String, String, String)> {
+    // (窄边界词, 宽边界词, trap_id, 风险等级, 替换理由)
+    vec![
+        // 核心术语类 (T01-T06)
+        ("漏洞".to_string(), "风险".to_string(), "T01".to_string(), "高危".to_string(), "语义宽度极大，'风险'会触发发散性思考，将代码质量、架构设计等问题纳入报告".to_string()),
+        ("缺陷".to_string(), "问题".to_string(), "T02".to_string(), "高危".to_string(), "'问题'语义范围极宽，改进建议、优化点都可能被归类为问题".to_string()),
+        ("错误".to_string(), "异常".to_string(), "T03".to_string(), "中危".to_string(), "'异常'边界定义模糊，轻微偏差都可能被纳入报告".to_string()),
+
+        // 动作指令类 (T11-T16)
+        ("检查".to_string(), "审查".to_string(), "T11".to_string(), "高危".to_string(), "'审查'会触发主观评价性意见，'检查'仅触发客观判定".to_string()),
+        ("列出".to_string(), "描述".to_string(), "T12".to_string(), "高危".to_string(), "'描述'会触发解释和评论性内容，'列出'仅产出结构化条目".to_string()),
+        ("总结".to_string(), "分析".to_string(), "T13".to_string(), "高危".to_string(), "'分析'会触发推理和假设性思考，'总结'仅提炼已有信息".to_string()),
+        ("识别".to_string(), "评估".to_string(), "T14".to_string(), "高危".to_string(), "'评估'具有程度性、主观性，'识别'是二元判定".to_string()),
+        ("提取".to_string(), "探索".to_string(), "T15".to_string(), "中危".to_string(), "'探索'触发开放式搜索，'提取'仅获取已知信息".to_string()),
+        ("验证".to_string(), "理解".to_string(), "T16".to_string(), "中危".to_string(), "'理解'触发解释性思考，'验证'是明确的真假判定".to_string()),
+
+        // 约束词类 (T21-T24)
+        ("要求".to_string(), "建议".to_string(), "T21".to_string(), "高危".to_string(), "'建议'会触发发散性思维，产生大量创意性内容".to_string()),
+        ("必须".to_string(), "应该".to_string(), "T22".to_string(), "中危".to_string(), "'应该'约束力较弱，大模型可能选择性遵守".to_string()),
+        ("禁止".to_string(), "避免".to_string(), "T23".to_string(), "中危".to_string(), "'避免'是建议性约束，'禁止'是强制性约束".to_string()),
+        ("限制".to_string(), "控制".to_string(), "T24".to_string(), "低危".to_string(), "'控制'语义较宽，'限制'边界更明确".to_string()),
+
+        // 输出描述类 (T31-T33)
+        ("列表".to_string(), "报告".to_string(), "T31".to_string(), "中危".to_string(), "'报告'会触发结构化文档，包含引言、分析、建议等".to_string()),
+        ("结果".to_string(), "洞察".to_string(), "T32".to_string(), "高危".to_string(), "'洞察'高度发散，触发创造性思考".to_string()),
+        ("数据".to_string(), "信息".to_string(), "T33".to_string(), "低危".to_string(), "'信息'范围更广，'数据'更具体".to_string()),
+
+        // 英文词汇对
+        ("vulnerability".to_string(), "risk".to_string(), "T01E".to_string(), "高危".to_string(), "Same as Chinese T01".to_string()),
+        ("defect".to_string(), "issue".to_string(), "T02E".to_string(), "高危".to_string(), "Same as Chinese T02".to_string()),
+        ("error".to_string(), "anomaly".to_string(), "T03E".to_string(), "中危".to_string(), "Same as Chinese T03".to_string()),
+        ("check".to_string(), "review".to_string(), "T11E".to_string(), "高危".to_string(), "Same as Chinese T11".to_string()),
+        ("list".to_string(), "describe".to_string(), "T12E".to_string(), "高危".to_string(), "Same as Chinese T12".to_string()),
+        ("summarize".to_string(), "analyze".to_string(), "T13E".to_string(), "高危".to_string(), "Same as Chinese T13".to_string()),
+        ("requirement".to_string(), "suggestion".to_string(), "T21E".to_string(), "高危".to_string(), "Same as Chinese T21".to_string()),
+        ("must".to_string(), "should".to_string(), "T22E".to_string(), "中危".to_string(), "Same as Chinese T22".to_string()),
+    ]
 }
 
 #[tauri::command]
@@ -422,49 +483,63 @@ fn check_skill_quality(skill_name: String) -> Result<SkillCheckResult, String> {
     }
 
     let content = fs::read_to_string(&skill_path).map_err(|e| e.to_string())?;
+    let lines: Vec<&str> = content.lines().collect();
 
-    // 语义陷阱词典（简化版）
-    let high_risk_words = vec!["风险", "分析", "建议", "洞察", "risk", "analyze", "suggestion", "insight"];
-    let medium_risk_words = vec!["审查", "问题", "描述", "探索", "review", "issue", "describe", "explore"];
-    let low_risk_words = vec!["异常", "应该", "anomaly", "should"];
+    let lexicon = get_semantic_trap_lexicon();
 
+    let mut details = Vec::new();
     let mut high_count = 0;
     let mut medium_count = 0;
     let mut low_count = 0;
-    let mut issues = Vec::new();
+    let mut suggestions = Vec::new();
 
-    let content_lower = content.to_lowercase();
+    // STEP 2: 提取关键词并匹配
+    for (line_num, line) in lines.iter().enumerate() {
+        let line_lower = line.to_lowercase();
 
-    // 检测高危词汇
-    for word in &high_risk_words {
-        if content_lower.contains(word) {
-            high_count += content_lower.matches(word).count();
-            issues.push(format!("🔴 高危: 发现宽边界词 \"{}\"，建议替换为更精确的词汇", word));
-        }
-    }
+        // STEP 3: 逐词匹配
+        for (narrow, wide, trap_id, risk_level, reason) in &lexicon {
+            if line_lower.contains(&wide.to_lowercase()) {
+                // 找到宽边界词
+                match risk_level.as_str() {
+                    "高危" => high_count += 1,
+                    "中危" => medium_count += 1,
+                    "低危" => low_count += 1,
+                    _ => {}
+                }
 
-    // 检测中危词汇
-    for word in &medium_risk_words {
-        if content_lower.contains(word) {
-            medium_count += content_lower.matches(word).count();
-            issues.push(format!("🟡 中危: 发现宽边界词 \"{}\"，建议使用更具体的表达", word));
-        }
-    }
+                details.push(TrapDetail {
+                    word: wide.clone(),
+                    trap_id: trap_id.clone(),
+                    risk_level: risk_level.clone(),
+                    replacement: narrow.clone(),
+                    reason: reason.clone(),
+                    line_number: line_num + 1,
+                    context: line.to_string(),
+                });
 
-    // 检测低危词汇
-    for word in &low_risk_words {
-        if content_lower.contains(word) {
-            low_count += content_lower.matches(word).count();
-            issues.push(format!("🟢 低危: 发现宽边界词 \"{}\"，建议考虑替换", word));
+                // 生成替换建议
+                let fixed_line = line.replace(wide, narrow);
+                if fixed_line != *line {
+                    suggestions.push(ReplacementSuggestion {
+                        original: line.to_string(),
+                        fixed: fixed_line,
+                        reason: format!("替换宽边界词 '{}' 为 '{}'", wide, narrow),
+                    });
+                }
+            }
         }
     }
 
     Ok(SkillCheckResult {
         skill_name,
+        total_keywords: details.len(),
+        traps_found: details.len(),
         high_risk: high_count,
         medium_risk: medium_count,
         low_risk: low_count,
-        issues,
+        details,
+        suggestions,
     })
 }
 

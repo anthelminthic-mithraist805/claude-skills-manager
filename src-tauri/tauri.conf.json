@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "skill-manager-tauri",
+  "productName": "Claude Skills Manager",
   "version": "0.1.0",
-  "identifier": "com.wa1ki0g.skill-manager-tauri",
+  "identifier": "com.wa1ki0g.claude-skills-manager",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,11 @@
   "app": {
     "windows": [
       {
-        "title": "skill-manager-tauri",
-        "width": 800,
-        "height": 600
+        "title": "Claude Skills Manager",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600
       }
     ],
     "security": {

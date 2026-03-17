@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Build the app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Claude Skills Manager v__VERSION__'
+          releaseBody: |
+            ## 🎉 新版本发布
+
+            ### ✨ 主要特性
+            - 🌐 支持 12+ 主流 AI 编程工具
+            - 🛡️ 智能语义陷阱检测系统
+            - 💎 现代化用户界面
+            - 🚀 轻量高效的桌面应用
+
+            ### 📦 安装说明
+            - **macOS**: 下载 `.dmg` 文件并拖拽到应用程序文件夹
+            - **Windows**: 下载 `.msi` 或 `.exe` 安装程序
+            - **Linux**: 下载 `.AppImage`, `.deb`, 或 `.rpm` 包
+
+            查看完整更新日志请访问 [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
